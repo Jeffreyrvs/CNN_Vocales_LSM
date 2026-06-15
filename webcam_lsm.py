@@ -1,4 +1,4 @@
-"""
+""""
 Inferencia en tiempo real — Vocales LSM
 Captura webcam → detecta mano (MediaPipe Tasks API) → recorta 240x240 → predice vocal.
 
@@ -18,7 +18,7 @@ import mediapipe as mp
 from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision as mp_vision
 
-# ── Configuración ─────────────────────────────────────────────────────────────
+# ── Configuración 
 MODEL_PATH  = os.path.join(os.path.dirname(__file__), "mejor_modelo_lsm.keras")
 IMG_SIZE    = (224, 224)
 CLASES      = ["A", "E", "I", "O", "U"]
@@ -32,7 +32,7 @@ HAND_URL    = (
     "hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
 )
 
-# Conexiones del esqueleto de la mano (índices de landmarks)
+# Conexiones del esqueleto de la mano (índices de landmarks) mediapipe
 HAND_CONNECTIONS = [
     (0,1),(1,2),(2,3),(3,4),
     (0,5),(5,6),(6,7),(7,8),
@@ -42,18 +42,18 @@ HAND_CONNECTIONS = [
     (5,9),(9,13),(13,17),
 ]
 
-# ── Descargar modelo de MediaPipe si no existe ────────────────────────────────
+# descargar modelo de MediaPipe si no existe 
 if not os.path.exists(HAND_MODEL):
     print("Descargando hand_landmarker.task (~2 MB)…")
     urllib.request.urlretrieve(HAND_URL, HAND_MODEL)
     print("Modelo descargado.\n")
 
-# ── Cargar modelo CNN ─────────────────────────────────────────────────────────
+# cargar modelo entrenado 
 print("Cargando modelo LSM…")
 model = tf.keras.models.load_model(MODEL_PATH)
 print("Modelo listo.\n")
 
-# ── Inferencia ────────────────────────────────────────────────────────────────
+#inferencia 
 def predecir_imagen(bgr_crop):
     gray    = cv2.cvtColor(bgr_crop, cv2.COLOR_BGR2GRAY)
     resized = cv2.resize(gray, IMG_SIZE)
@@ -73,7 +73,7 @@ options = mp_vision.HandLandmarkerOptions(
 )
 landmarker = mp_vision.HandLandmarker.create_from_options(options)
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# funciones para recortar y rellenar imagenes
 def bbox_ajustado(landmarks, frame_w, frame_h, padding=0.10):
     """Bounding box ajustado al perímetro de la mano con padding mínimo."""
     xs = [lm.x for lm in landmarks]
@@ -113,7 +113,7 @@ def dibujar_esqueleto(frame, landmarks, frame_w, frame_h):
     for p in pts:
         cv2.circle(frame, p, 3, (255, 255, 255), -1)
 
-# ── Captura principal ─────────────────────────────────────────────────────────
+# ── Captura principal de frames
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     raise RuntimeError("No se pudo abrir la cámara.")
@@ -151,7 +151,7 @@ while True:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 220, 0), 2)
         dibujar_esqueleto(frame, lms, w, h)
 
-    # HUD
+    # texto en la esquina
     etiqueta = f"{clase_actual}  {conf_actual*100:.0f}%"
     cv2.rectangle(frame, (0, 0), (230, 55), (0, 0, 0), -1)
     cv2.putText(frame, etiqueta, (10, 42),

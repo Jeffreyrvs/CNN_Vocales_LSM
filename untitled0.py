@@ -1,4 +1,6 @@
 
+
+
 """
 Reconocimiento de Vocales en Lengua de Señas Mexicana (LSM)
 CNN para clasificar: A, E, I, O, U
@@ -27,7 +29,7 @@ import seaborn as sns
 # CONFIGURACIÓN
 
 IMG_SIZE    = (224, 224)
-CHANNELS    = 1         # RGB — cambiar a 1 si usas escala de grises
+CHANNELS    = 1         
 BATCH_SIZE  = 32
 EPOCHS      = 30
 LR          = 0.001
@@ -88,7 +90,7 @@ test_gen = val_test_datagen.flow_from_directory(
     shuffle=False,
 )
 
-print("\n✅ Clases detectadas:", train_gen.class_indices)
+print("\n Clases detectadas:", train_gen.class_indices)
 print(f"   Entrenamiento : {train_gen.samples} imágenes")
 print(f"   Validación    : {val_gen.samples} imágenes")
 print(f"   Prueba        : {test_gen.samples} imágenes\n")
@@ -164,9 +166,7 @@ history = model.fit(
     callbacks=callbacks,
 )
 
-# ─────────────────────────────────────────────
-# CURVAS DE APRENDIZAJE
-# ─────────────────────────────────────────────
+# graficas
 def plot_history(history):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -191,13 +191,11 @@ def plot_history(history):
     plt.tight_layout()
     plt.savefig("curvas_entrenamiento.png", dpi=150)
     plt.show()
-    print("📊 Curvas guardadas en curvas_entrenamiento.png")
+    print("Curvas guardadas en curvas_entrenamiento.png")
 
 plot_history(history)
 
-# ─────────────────────────────────────────────
-# EVALUACIÓN EN TEST
-# ─────────────────────────────────────────────
+#tabla 
 print("\n─── Evaluación en conjunto de prueba ───")
 test_loss, test_acc = model.evaluate(test_gen)
 print(f"Loss : {test_loss:.4f}")
@@ -224,29 +222,9 @@ plt.xlabel("Predicción")
 plt.tight_layout()
 plt.savefig("matriz_confusion.png", dpi=150)
 plt.show()
-print("📊 Matriz guardada en matriz_confusion.png")
+print("Matriz guardada en matriz_confusion.png")
 
-# ─────────────────────────────────────────────
-# GUARDAR MODELO FINAL
-# ─────────────────────────────────────────────
+# MODELO FINAL
+
 model.save("modelo_lsm_vocales_final.keras")
-print("\n✅ Modelo guardado en modelo_lsm_vocales_final.keras")
-
-# ─────────────────────────────────────────────
-# FUNCIÓN DE INFERENCIA RÁPIDA
-# ─────────────────────────────────────────────
-def predecir_imagen(ruta_imagen: str, modelo=model):
-    """Predice la vocal para una imagen individual."""
-    img = tf.keras.utils.load_img(ruta_imagen, target_size=IMG_SIZE,
-                                  color_mode=COLOR_MODE)
-    arr = tf.keras.utils.img_to_array(img) / 255.0
-    arr = np.expand_dims(arr, axis=0)
-    probs = modelo.predict(arr, verbose=0)[0]
-    clase = CLASES[np.argmax(probs)]
-    confianza = np.max(probs)
-    print(f"Imagen : {ruta_imagen}")
-    print(f"Seña   : {clase}  ({confianza*100:.1f}% confianza)")
-    return clase, confianza
-
-# Ejemplo de uso:
-# predecir_imagen("mi_foto.jpg")
+print("\n Modelo guardado en modelo_lsm_vocales_final.keras")
